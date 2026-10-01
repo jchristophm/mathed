@@ -1,0 +1,39 @@
+.mathed-editor { --me-border:#c9d1dc; --me-ink:#19283b; --me-focus:#2368a2; position:relative; color:var(--me-ink); font:16px system-ui,sans-serif; width:100%; box-sizing:border-box; }
+.mathed-editor * { box-sizing:border-box; }
+.me-toolbar,.me-actions { display:flex; flex-wrap:wrap; gap:6px; padding:10px 0; }
+.mathed-editor button,.mathed-editor select { min-height:44px; background:#f6f8fb; color:var(--me-ink); border:1px solid var(--me-border); border-radius:7px; font:inherit; cursor:pointer; padding:7px 12px; }
+.mathed-editor button:hover { background:#e7eef6; }
+.mathed-editor button:focus-visible,.mathed-editor select:focus-visible { outline:3px solid var(--me-focus); outline-offset:2px; }
+.me-field { background:white; border:1px solid var(--me-border); border-radius:10px; min-height:140px; padding:22px 12px; overflow-x:auto; font-size:23px; display:flex; align-items:center; cursor:text; }
+.mathed-editor:focus-within .me-field { border-color:var(--me-focus); box-shadow:0 0 0 2px #2368a222; }
+.me-sequence { display:inline-flex; align-items:center; white-space:nowrap; }
+.me-node { display:inline-flex; align-items:center; flex-shrink:0; }
+.mathed-editor .me-position { min-height:32px; height:auto; min-width:10px; border:0; border-radius:0; padding:0 2px; background:transparent; font:inherit; color:var(--me-focus); display:inline-flex; align-items:center; }
+.me-position:hover { background:#e7eef6!important; }
+.me-caret { animation:me-blink 1s steps(2,start) infinite; }
+@keyframes me-blink { to { opacity:.2; } }
+.me-hole { color:#718096; font-size:.85em; }
+.me-buffer { color:#536b85; font-family:serif; margin-right:3px; }
+.me-fraction { display:inline-flex; flex-direction:column; vertical-align:middle; }
+.me-numerator { border-bottom:1.5px solid currentColor; display:flex; justify-content:center; padding:0 4px 3px; }
+.me-denominator { display:flex; justify-content:center; padding:3px 4px 0; }
+.me-script { font-size:.7em; align-self:flex-start; padding-bottom:8px; }
+.me-subscript>.me-script { align-self:flex-end; padding:8px 0 0; }
+.me-root-index { font-size:.6em; align-self:flex-start; }
+.me-radicand { border-top:1.5px solid currentColor; padding-top:3px; }
+.me-glyph { font-family:serif; margin:0 2px; }
+.me-root>.me-glyph { font-size:1.5em; margin:0; }
+.me-limits { display:inline-flex; flex-direction:column; align-items:center; }
+.me-limits>.me-sequence { font-size:.6em; }
+.me-limits>.me-glyph { font-size:1.6em; }
+.me-accent { flex-direction:column; }
+.me-accent-mark { line-height:.6; font-size:.8em; }
+.me-unresolved { color:#a32323; font:14px system-ui; }
+.me-input { position:absolute; width:1px; height:1px; left:18px; top:110px; padding:0; opacity:.01; font-size:16px; border:0; resize:none; }
+.me-status { min-height:26px; margin:6px 0; font-size:14px; color:#4a6077; }
+.me-warning { color:#a32323; }
+.me-help { margin:6px 0; font-size:13px; color:#55697f; }
+.me-suggestions { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.me-suggestions button { text-align:left; font-size:14px; }
+@media (pointer:coarse) { .mathed-editor .me-position { min-width:18px; min-height:44px; } }
+@media (prefers-reduced-motion:reduce) { .me-caret { animation:none; } }

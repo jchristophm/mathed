@@ -1,0 +1,38 @@
+{
+  "format": "mathed",
+  "version": 1,
+  "status": "draft",
+  "expression": [
+    {
+      "type": "fraction",
+      "numerator": [
+        {
+          "type": "group",
+          "body": [
+            {
+              "type": "identifier",
+              "name": "x"
+            },
+            {
+              "type": "operator",
+              "value": "+"
+            },
+            {
+              "type": "number",
+              "value": "1"
+            }
+          ]
+        }
+      ],
+      "denominator": []
+    }
+  ],
+  "pending": {
+    "text": "2e-",
+    "path": [
+      0,
+      "denominator",
+      0
+    ]
+  }
+}

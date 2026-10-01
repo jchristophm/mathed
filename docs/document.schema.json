@@ -1,0 +1,473 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:mathed:document:1",
+  "title": "Mathed document version 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "version",
+    "status",
+    "expression"
+  ],
+  "properties": {
+    "format": {
+      "const": "mathed"
+    },
+    "version": {
+      "const": 1
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "complete"
+      ]
+    },
+    "expression": {
+      "$ref": "#/$defs/expression"
+    },
+    "pending": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "path"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "path": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "minimum": 0
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "complete"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": [
+            "pending"
+          ]
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "expression": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "$ref": "#/$defs/node"
+      }
+    },
+    "node": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/number"
+        },
+        {
+          "$ref": "#/$defs/identifier"
+        },
+        {
+          "$ref": "#/$defs/variable"
+        },
+        {
+          "$ref": "#/$defs/constant"
+        },
+        {
+          "$ref": "#/$defs/symbol"
+        },
+        {
+          "$ref": "#/$defs/operator"
+        },
+        {
+          "$ref": "#/$defs/function"
+        },
+        {
+          "$ref": "#/$defs/accent"
+        },
+        {
+          "$ref": "#/$defs/fraction"
+        },
+        {
+          "$ref": "#/$defs/power"
+        },
+        {
+          "$ref": "#/$defs/subscript"
+        },
+        {
+          "$ref": "#/$defs/group"
+        },
+        {
+          "$ref": "#/$defs/root"
+        },
+        {
+          "$ref": "#/$defs/sum"
+        },
+        {
+          "$ref": "#/$defs/derivative"
+        }
+      ]
+    },
+    "number": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "value"
+      ],
+      "properties": {
+        "type": {
+          "const": "number"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?$"
+        }
+      }
+    },
+    "identifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "name"
+      ],
+      "properties": {
+        "type": {
+          "const": "identifier"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      }
+    },
+    "variable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "const": "variable"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      }
+    },
+    "constant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "name"
+      ],
+      "properties": {
+        "type": {
+          "const": "constant"
+        },
+        "name": {
+          "enum": [
+            "pi",
+            "e",
+            "i"
+          ]
+        }
+      }
+    },
+    "symbol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "name"
+      ],
+      "properties": {
+        "type": {
+          "const": "symbol"
+        },
+        "name": {
+          "enum": [
+            "alpha",
+            "beta",
+            "gamma",
+            "delta",
+            "epsilon",
+            "eta",
+            "theta",
+            "kappa",
+            "lambda",
+            "mu",
+            "nu",
+            "rho",
+            "sigma",
+            "tau",
+            "phi",
+            "chi",
+            "psi",
+            "omega",
+            "Delta",
+            "Sigma",
+            "Omega"
+          ]
+        }
+      }
+    },
+    "operator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "value"
+      ],
+      "properties": {
+        "type": {
+          "const": "operator"
+        },
+        "value": {
+          "enum": [
+            "+",
+            "-",
+            "*",
+            "/",
+            "=",
+            ","
+          ]
+        }
+      }
+    },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "name",
+        "argument"
+      ],
+      "properties": {
+        "type": {
+          "const": "function"
+        },
+        "name": {
+          "enum": [
+            "sin",
+            "cos",
+            "tan",
+            "arcsin",
+            "arccos",
+            "arctan",
+            "sinh",
+            "cosh",
+            "tanh",
+            "exp",
+            "ln",
+            "log",
+            "abs"
+          ]
+        },
+        "argument": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "accent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "kind",
+        "body"
+      ],
+      "properties": {
+        "type": {
+          "const": "accent"
+        },
+        "kind": {
+          "enum": [
+            "vec",
+            "hat",
+            "bar",
+            "dot"
+          ]
+        },
+        "body": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "fraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "numerator",
+        "denominator"
+      ],
+      "properties": {
+        "type": {
+          "const": "fraction"
+        },
+        "numerator": {
+          "$ref": "#/$defs/expression"
+        },
+        "denominator": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "power": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "base",
+        "exponent"
+      ],
+      "properties": {
+        "type": {
+          "const": "power"
+        },
+        "base": {
+          "$ref": "#/$defs/expression"
+        },
+        "exponent": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "subscript": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "base",
+        "subscript"
+      ],
+      "properties": {
+        "type": {
+          "const": "subscript"
+        },
+        "base": {
+          "$ref": "#/$defs/expression"
+        },
+        "subscript": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "body"
+      ],
+      "properties": {
+        "type": {
+          "const": "group"
+        },
+        "body": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "root": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "index",
+        "radicand"
+      ],
+      "properties": {
+        "type": {
+          "const": "root"
+        },
+        "index": {
+          "$ref": "#/$defs/expression"
+        },
+        "radicand": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "sum": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "lower",
+        "upper",
+        "body"
+      ],
+      "properties": {
+        "type": {
+          "const": "sum"
+        },
+        "lower": {
+          "$ref": "#/$defs/expression"
+        },
+        "upper": {
+          "$ref": "#/$defs/expression"
+        },
+        "body": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "derivative": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "expression",
+        "variable",
+        "order"
+      ],
+      "properties": {
+        "type": {
+          "const": "derivative"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "variable": {
+          "$ref": "#/$defs/expression"
+        },
+        "order": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    }
+  }
+}

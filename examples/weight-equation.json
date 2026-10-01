@@ -1,0 +1,27 @@
+{
+  "format": "mathed",
+  "version": 1,
+  "status": "complete",
+  "expression": [
+    {
+      "type": "variable",
+      "id": "earth-rock.weight"
+    },
+    {
+      "type": "operator",
+      "value": "="
+    },
+    {
+      "type": "variable",
+      "id": "rock.mass"
+    },
+    {
+      "type": "operator",
+      "value": "*"
+    },
+    {
+      "type": "variable",
+      "id": "earth.gravity"
+    }
+  ]
+}
