@@ -8,10 +8,10 @@ Redesigned mechanisms: versioned semantic nodes replace raw LaTeX/character toke
 
 - model.ts: types, format validation, draft diagnostics, child slots and serialization.
 - vocabulary.ts: session-local vocabulary validation, recognition and identity resolution.
-- controller.ts: keyboard buffering, structural mutations, path navigation and history, independent of DOM.
+- controller.ts: keyboard buffering, structural mutations, path navigation and history, independent of DOM. Arrow navigation and deletion share the ordered position traversal, including sibling slots; empty-container removal does not change document representation.
 - latex.ts: safe generated presentation; never the authoritative document.
-- renderer.ts: nested visual structures and clickable insertion positions; KaTeX for leaf symbols.
+- renderer.ts: nested visual structures and clickable insertion positions; KaTeX for leaf symbols. Compact insertion positions use wider invisible hit areas without adding visible gaps; empty required slots remain visible.
 - mathed.ts: instance-scoped DOM, controls and lifecycle, callbacks.
-- demo/: small host using the actual package, JSON open/download and two modes.
+- demo/: small host using the actual package, JSON open/download and two modes. The mutable demonstration vocabulary creates a fresh editor session when applied, preserving the current document. Validation, identity resolution and unresolved-reference handling use the existing core mechanisms; no mutable-library API is added to the editor.
 
 All state and listeners belong to an editor instance. Teardown removes listeners and DOM. Inputs and outputs are defensive copies. Persistence belongs to the host. The package is independently versioned; no Diagramed globals, server, account or iframe is required.

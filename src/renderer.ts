@@ -7,7 +7,7 @@ const element = (tag: string, className: string, text = '') => {
 };
 export function renderExpression(controller: EditorController): HTMLElement {
   const selected = JSON.stringify(controller.path);
-  function sequence(list: Expression, prefix: Path): HTMLElement {
+  function sequence(list: Expression, prefix: Path, optional = false): HTMLElement {
     const row = element('span', 'me-sequence');
     for (let i = 0; i <= list.length; i++) {
       const path = prefix.concat(i);
@@ -16,20 +16,29 @@ export function renderExpression(controller: EditorController): HTMLElement {
       position.dataset.path = JSON.stringify(path);
       position.setAttribute('aria-label', 'Cursor ' + path.join('/'));
       position.tabIndex = -1;
-      if (JSON.stringify(path) === selected) {
+      const current = JSON.stringify(path) === selected;
+      if (!list.length && !optional && !(current && controller.buffer)) position.classList.add('me-empty');
+      if (current) {
         position.classList.add('me-current');
-        if (controller.buffer) position.append(element('span', 'me-buffer', controller.buffer));
+        if (controller.buffer) { position.classList.add('me-pending'); position.append(element('span', 'me-buffer', controller.buffer)); }
         position.append(element('span', 'me-caret', '|'));
-      } else if (!list.length) position.append(element('span', 'me-hole', '□'));
+      } else if (!list.length && !optional) position.append(element('span', 'me-hole', '□'));
       row.append(position);
-      if (list[i]) row.append(node(list[i], prefix.concat(i)));
+      if (list[i]) {
+        const rendered = node(list[i], prefix.concat(i));
+        if (list[i].type === 'operator') {
+          const operator = list[i] as Extract<MathNode, { type: 'operator' }>;
+          rendered.classList.add(operator.value === '=' ? 'me-relation' : operator.value === ',' ? 'me-comma' : i > 0 && list[i - 1].type !== 'operator' ? 'me-binary' : 'me-unary');
+        }
+        row.append(rendered);
+      }
     }
     return row;
   }
   function node(n: MathNode, path: Path): HTMLElement {
     const wrapper = element('span', 'me-node me-' + n.type);
     wrapper.dataset.nodeType = n.type;
-    const slot = (key: string) => sequence(child(n, key), path.concat(key));
+    const slot = (key: string) => sequence(child(n, key), path.concat(key), n.type === 'root' && key === 'index');
     const glyph = (text: string) => element('span', 'me-glyph', text);
     switch (n.type) {
       case 'fraction':

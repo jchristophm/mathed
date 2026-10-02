@@ -58,7 +58,9 @@ describe('buffered mathematical input', () => {
     const c = new EditorController(); c.input('12 '); c.delete(); expect(c.buffer).toBe('1'); c.input('3 '); expect(c.expression).toEqual([{type:'number',value:'13'}]);
     c.input('/4 '); c.exit(); c.delete(); expect(c.path).toEqual([0,'denominator',1]);
     c.home(); c.delete(true); c.input('5 '); expect(toLatex(c.expression)).toBe('\\frac{13}{5}');
-    c.exit(); c.home(); c.delete(true); expect(c.expression).toEqual([]);
+    c.exit(); c.home(); c.delete(true); expect(c.path).toEqual([0,'numerator',0]);
+    for(let i=0;i<12&&(c.expression.length||c.buffer);i++)c.delete(true);
+    expect(c.expression).toEqual([]);
   });
   it('undoes and redoes structure, input and pending state', () => {
     const c = new EditorController(); c.input('x '); const before = c.getDocument();

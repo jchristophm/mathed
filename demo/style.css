@@ -13,4 +13,10 @@ summary { cursor:pointer; padding:8px 0; }
 pre { white-space:pre-wrap; overflow-wrap:anywhere; background:#f4f6f9; padding:14px; border-radius:7px; font-size:12px; max-height:340px; overflow:auto; }
 #mode-description { font-size:14px; color:#53677e; }
 #result { color:#2368a2; overflow-wrap:anywhere; min-height:20px; }
+.library-rows { display:grid; gap:10px; }
+.library-rows fieldset { display:flex; flex-wrap:wrap; gap:8px; min-width:0; border:1px solid #c9d1dc; border-radius:7px; padding:10px; }
+.library-rows label { display:flex; flex-direction:column; gap:4px; flex:1 1 180px; min-width:0; }
+.library-rows input { box-sizing:border-box; width:100%; min-height:44px; padding:8px; font:inherit; border:1px solid #c9d1dc; border-radius:5px; }
+.library-rows button { min-height:44px; padding:8px; font:inherit; border:1px solid #c9d1dc; border-radius:5px; background:#f6f8fb; }
+.library-status { color:#2368a2; overflow-wrap:anywhere; }
 @media(max-width:600px) { body { padding:10px; } main { padding:16px 12px; } h1 { font-size:30px; } }

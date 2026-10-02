@@ -50,7 +50,7 @@ export function createEditor(container: HTMLElement, options: EditorOptions = {}
     const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', label); b.title = label; b.textContent = text;
     listen(b, 'click', () => run(fn)); parent.append(b);
   }
-  const structures: [Structure, string, string][] = [['fraction', 'Fraction', 'a/b'], ['power', 'Power', 'xⁿ'], ['subscript', 'Subscript', 'xₙ'], ['group', 'Parentheses', '( )'], ['root', 'Square root', '√'], ['sum', 'Summation', '∑'], ['derivative', 'Derivative', 'd/dx'], ['vec', 'Vector accent', 'v⃗'], ['hat', 'Hat accent', 'x̂']];
+  const structures: [Structure, string, string][] = [['fraction', 'Fraction', 'a/b'], ['power', 'Power', 'xⁿ'], ['subscript', 'Subscript', 'xₙ'], ['group', 'Parentheses', '( )'], ['root', 'Square root', '√'], ['sum', 'Summation', '∑']];
   for (const [type, label, text] of structures) button(toolbar, label, text, () => controller.insertStructure(type));
   function select(label: string, choices: readonly string[], choose: (value: string) => void): void {
     const s = document.createElement('select'); s.setAttribute('aria-label', label);

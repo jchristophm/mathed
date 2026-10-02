@@ -63,14 +63,23 @@ test('keyboard navigation enters and exits nested slots',async({page})=>{
   await page.keyboard.press('ArrowDown'); await expect(page.locator('.me-current')).toHaveAttribute('data-path','[0,"denominator",0]');
   await page.keyboard.press('Escape'); await expect(page.locator('.me-current')).toHaveAttribute('data-path','[1]');
 });
-test('roots, Greek, subscript, summation, derivative and explicit vector controls',async({page})=>{
+test('roots, Greek, subscript and summation controls; legacy derivatives and accents reopen',async({page})=>{
   await type(page,'x_1 '); await page.getByRole('button',{name:'Exit structure',exact:true}).click();
   await type(page,'+'); await page.getByRole('button',{name:'Square root',exact:true}).click(); await type(page,'4 '); await page.getByRole('button',{name:'Exit structure',exact:true}).click();
   await type(page,'+'); await page.getByRole('button',{name:'Summation',exact:true}).click(); await type(page,'i=1 '); await page.getByRole('button',{name:'Next slot',exact:true}).click(); await type(page,'3 '); await page.getByRole('button',{name:'Next slot',exact:true}).click(); await type(page,'x '); await page.getByRole('button',{name:'Exit structure',exact:true}).click();
-  await type(page,'+'); await page.getByRole('button',{name:'Derivative',exact:true}).click(); await type(page,'x '); await page.getByRole('button',{name:'Next slot',exact:true}).click(); await type(page,'x '); await page.getByRole('button',{name:'Exit structure',exact:true}).click();
-  await type(page,'+'); await page.getByRole('button',{name:'Vector accent',exact:true}).click(); await type(page,'v '); await page.getByRole('button',{name:'Exit structure',exact:true}).click();
   await page.getByRole('button',{name:'Submit equation',exact:true}).click(); expect((await document(page)).status).toBe('complete');
-  await expect(page.locator('.me-root')).toHaveCount(1); await expect(page.locator('.me-sum')).toHaveCount(1); await expect(page.locator('.me-derivative')).toHaveCount(1); await expect(page.locator('.me-accent')).toHaveCount(1);
+  await expect(page.locator('.me-root')).toHaveCount(1); await expect(page.locator('.me-sum')).toHaveCount(1);
+  for(const name of ['Derivative','Vector accent','Hat accent'])await expect(page.getByRole('button',{name,exact:true})).toHaveCount(0);
+  const legacy={format:'mathed',version:1,status:'complete',expression:[
+    {type:'derivative',expression:[{type:'identifier',name:'x'}],variable:[{type:'identifier',name:'x'}],order:[{type:'number',value:'1'}]},
+    {type:'accent',kind:'vec',body:[{type:'identifier',name:'v'}]},
+    {type:'accent',kind:'hat',body:[{type:'identifier',name:'x'}]}
+  ]};
+  await page.locator('#open').setInputFiles({name:'legacy.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(legacy))});
+  await expect(page.locator('#result')).toContainText('Opened');
+  expect((await document(page)).expression).toEqual(legacy.expression);
+  await expect(page.locator('.me-derivative')).toHaveCount(1);await expect(page.locator('.me-accent')).toHaveCount(2);
+  await page.getByRole('button',{name:'Submit equation',exact:true}).click();expect((await document(page)).status).toBe('complete');
 });
 test('JSON download/open preserves nested structure and unfinished input',async({page})=>{
   await type(page,'(x+1)/2e-');

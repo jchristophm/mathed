@@ -131,6 +131,9 @@ export class EditorController {
   }
   move(direction: -1 | 1): void {
     if (!this.flush()) return;
+    this.advance(direction);
+  }
+  private advance(direction: -1 | 1): void {
     const positions = this.positions(), index = positions.findIndex(p => JSON.stringify(p) === JSON.stringify(this.path));
     this.path = positions[Math.max(0, Math.min(positions.length - 1, index + direction))];
   }
@@ -162,26 +165,26 @@ export class EditorController {
   home(end = false): void { if (this.flush()) { const { list } = resolve(this.expression, this.path); this.path[this.path.length - 1] = end ? list.length : 0; } }
   delete(forward = false): void {
     this.remember(); this.warning = '';
-    if (this.buffer) { this.buffer = forward ? '' : this.buffer.slice(0, -1); return; }
-    const { list, index } = resolve(this.expression, this.path);
-    if (forward) { list.splice(index, 1); return; }
-    if (!index) {
-      if (this.path.length > 1) {
-        const nodePath = this.path.slice(0, -2), parent = resolve(this.expression, nodePath);
-        const n = parent.list[parent.index];
-        if (slots(n).every(k => !child(n, k).length)) parent.list.splice(parent.index, 1);
-        this.path = nodePath;
+    if (this.buffer) { this.buffer = forward ? this.buffer.slice(1) : this.buffer.slice(0, -1); return; }
+    const direction = forward ? 1 : -1;
+    // Empty containers are removable from their slots as well as from outside.
+    if (this.path.length > 1) {
+      const nodePath = this.path.slice(0, -2), parent = resolve(this.expression, nodePath);
+      if (slots(parent.list[parent.index]).every(key => !child(parent.list[parent.index], key).length)) {
+        parent.list.splice(parent.index, 1); this.path = nodePath; return;
       }
-      return;
     }
-    const previous = list[index - 1];
-    if (slots(previous).length) {
-      const key = slots(previous).at(-1)!;
-      this.path = this.path.slice(0, -1).concat(index - 1, key, child(previous, key).length); return;
+    const { list, index } = resolve(this.expression, this.path);
+    const targetIndex = forward ? index : index - 1, target = list[targetIndex];
+    if (!target) { this.advance(direction); return; }
+    if (slots(target).length && slots(target).some(key => child(target, key).length)) {
+      // Traverse the exact ordered positions used by arrow keys, including
+      // sibling slots. Do not jump outside a nonempty parent at a slot boundary.
+      this.advance(direction); return;
     }
-    list.splice(index - 1, 1); this.path[this.path.length - 1] = index - 1;
-    if (previous.type === 'number') this.buffer = previous.value.slice(0, -1);
-    if (previous.type === 'identifier') this.buffer = previous.name.slice(0, -1);
+    list.splice(targetIndex, 1); this.path[this.path.length - 1] = targetIndex;
+    const text = target.type === 'number' ? target.value : target.type === 'identifier' ? target.name : '';
+    this.buffer = forward ? text.slice(1) : text.slice(0, -1);
   }
   issues(): string[] {
     const issues = draftIssues(this.expression);

@@ -8,9 +8,16 @@
 .mathed-editor:focus-within .me-field { border-color:var(--me-focus); box-shadow:0 0 0 2px #2368a222; }
 .me-sequence { display:inline-flex; align-items:center; white-space:nowrap; }
 .me-node { display:inline-flex; align-items:center; flex-shrink:0; }
-.mathed-editor .me-position { min-height:32px; height:auto; min-width:10px; border:0; border-radius:0; padding:0 2px; background:transparent; font:inherit; color:var(--me-focus); display:inline-flex; align-items:center; }
-.me-position:hover { background:#e7eef6!important; }
-.me-caret { animation:me-blink 1s steps(2,start) infinite; }
+.mathed-editor .me-position { position:relative; z-index:1; min-height:32px; height:auto; width:1px; min-width:0; flex-shrink:0; border:0; border-radius:0; padding:0; background:transparent; font:inherit; color:var(--me-focus); display:inline-flex; align-items:center; justify-content:center; overflow:visible; }
+.me-position::after { content:''; position:absolute; width:12px; height:100%; left:50%; transform:translateX(-50%); }
+.me-position:hover::after { background:#2368a215; }
+.mathed-editor .me-position.me-empty { width:.65em; }
+.mathed-editor .me-position.me-pending { width:auto; }
+.me-caret { position:absolute; pointer-events:none; line-height:1; animation:me-blink 1s steps(2,start) infinite; }
+.me-pending .me-caret { left:100%; }
+.me-relation { margin:0 .28em; }
+.me-binary { margin:0 .22em; }
+.me-comma { margin-right:.12em; }
 @keyframes me-blink { to { opacity:.2; } }
 .me-hole { color:#718096; font-size:.85em; }
 .me-buffer { color:#536b85; font-family:serif; margin-right:3px; }
@@ -21,7 +28,7 @@
 .me-subscript>.me-script { align-self:flex-end; padding:8px 0 0; }
 .me-root-index { font-size:.6em; align-self:flex-start; }
 .me-radicand { border-top:1.5px solid currentColor; padding-top:3px; }
-.me-glyph { font-family:serif; margin:0 2px; }
+.me-glyph { font-family:KaTeX_Main,serif; font-size:1.21em; margin:0; }
 .me-root>.me-glyph { font-size:1.5em; margin:0; }
 .me-limits { display:inline-flex; flex-direction:column; align-items:center; }
 .me-limits>.me-sequence { font-size:.6em; }
@@ -35,5 +42,5 @@
 .me-help { margin:6px 0; font-size:13px; color:#55697f; }
 .me-suggestions { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
 .me-suggestions button { text-align:left; font-size:14px; }
-@media (pointer:coarse) { .mathed-editor .me-position { min-width:18px; min-height:44px; } }
+@media (pointer:coarse) { .mathed-editor .me-position { min-height:44px; } .me-position::after { width:20px; } }
 @media (prefers-reduced-motion:reduce) { .me-caret { animation:none; } }
