@@ -1,6 +1,8 @@
 # Initial independent editor delivery
 
-Implemented on development. Original Mathed and Balanced inspected read-only; no Problemly or Diagramed changes. No license, public deployment or hosting system added.
+Implemented on development. Original Mathed and Balanced inspected read-only; no Problemly or Diagramed changes. No software license added.
+
+Public demo deployment is now authorized. The existing verification workflow deploys the verified `demo-dist/` artifact using GitHub's standard Pages actions after successful development pushes. Repository Pages source must be configured as GitHub Actions; the README documents the one-time setting and public demo/embedding URLs.
 
 Delivered: reusable browser API, standalone and controlled-vocabulary modes, version 1 structured documents and schema, nested editing/navigation, buffered recognition and explicit ambiguity selection, externally assigned variable IDs, symbol renaming and unresolved-reference feedback, draft persistence, submission/cancellation, JSON demonstration, session-local undo/redo and teardown.
 

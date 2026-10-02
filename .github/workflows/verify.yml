@@ -1,4 +1,4 @@
-name: Verify Mathed
+name: Verify and deploy Mathed
 on:
   push:
     branches: [development]
@@ -27,3 +27,25 @@ jobs:
         with:
           name: browser-results
           path: test-results/
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name == 'push' && github.ref == 'refs/heads/development'
+        with:
+          path: demo-dist/
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/development'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: mathed-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy verified demo and embedding example
+        id: deployment
+        uses: actions/deploy-pages@v4

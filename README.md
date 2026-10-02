@@ -2,6 +2,9 @@
 
 An independent browser equation editor with editable structured JSON and optional externally supplied variables. No accounts, database, solver or external service is required.
 
+Public demonstration: [Mathed](https://jchristophm.github.io/mathed/).
+The [embedding example](https://jchristophm.github.io/mathed/examples/embedded.html) demonstrates two independent editor sessions.
+
 ## Local development
 
 Use Node 22 or newer:
@@ -23,7 +26,9 @@ npm run test:browser
 npm run preview
 ```
 
-Build outputs: reusable ES module and declarations in `dist/`; standalone demo and embedding example in `demo-dist/`. The verification workflow runs units, builds and Chromium desktop/Pixel 7 mobile-emulation tests on development pushes. It does not deploy.
+Build outputs: reusable ES module and declarations in `dist/`; standalone demo and embedding example in `demo-dist/`. The workflow runs units, both production builds and Chromium desktop/Pixel 7 mobile-emulation tests once. Successful development pushes upload the verified `demo-dist/` artifact and deploy it through GitHub Pages. Pull requests only verify. Assets use relative URLs, including from the nested embedding-example path.
+
+One-time repository setup: Settings → Pages → Build and deployment → Source → GitHub Actions. If the `github-pages` environment restricts deployment branches, allow `development`. After changing settings, re-run the failed deployment job; no merge into main is needed.
 
 ## Editing
 
