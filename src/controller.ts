@@ -10,6 +10,13 @@ export class EditorController {
   path: Path = [0];
   buffer = '';
   warning = '';
+  private suggestionText = '';
+  private suggestionId?: string;
+  get selectedSuggestion(): Variable | undefined {
+    const suggestions = this.suggestions;
+    if (this.suggestionText !== this.buffer || !suggestions.some(v => v.id === this.suggestionId)) { this.suggestionText = this.buffer; this.suggestionId = suggestions[0]?.id; }
+    return suggestions.find(v => v.id === this.suggestionId);
+  }
   private past: Snapshot[] = [];
   private future: Snapshot[] = [];
   constructor(options: ControllerOptions = {}) {
@@ -26,7 +33,7 @@ export class EditorController {
   private restore(s: Snapshot): void { this.expression = clone(s.expression); this.path = clone(s.path); this.buffer = s.buffer; this.warning = ''; }
   undo(): void { const s = this.past.pop(); if (s) { this.future.push(this.snapshot()); this.restore(s); } }
   redo(): void { const s = this.future.pop(); if (s) { this.past.push(this.snapshot()); this.restore(s); } }
-  get suggestions(): Variable[] { return this.mode === 'controlled' ? matches(this.vocabulary, this.buffer) : []; }
+  get suggestions(): Variable[] { return matches(this.vocabulary, this.buffer); }
   private put(n: MathNode, field?: string): void {
     const { list, index } = resolve(this.expression, this.path);
     list.splice(index, 0, n);
@@ -38,8 +45,9 @@ export class EditorController {
     if (numeric.test(value)) { this.put({ type: 'number', value }); }
     else {
       const candidates = this.mode === 'controlled' ? matches(this.vocabulary, value, true) : [];
-      if (candidates.length > 1) { this.warning = 'Multiple variables match. Choose a suggestion.'; return false; }
-      if (candidates.length === 1) this.put({ type: 'variable', id: candidates[0].id });
+      const selected = this.selectedSuggestion;
+      const functionName = (FUNCTIONS as readonly string[]).includes(value) || value === 'sqrt' || ['pi','e','i'].includes(value);
+      if (selected && (candidates.length || !functionName)) this.put({ type: 'variable', id: selected.id });
       else if ((FUNCTIONS as readonly string[]).includes(value)) this.put({ type: 'function', name: value as typeof FUNCTIONS[number], argument: [] }, 'argument');
       else if (value === 'sqrt') this.put({ type: 'root', index: [], radicand: [] }, 'radicand');
       else if (['pi', 'e', 'i'].includes(value)) this.put({ type: 'constant', name: value as 'pi' | 'e' | 'i' });
@@ -52,7 +60,7 @@ export class EditorController {
   commitBuffer(): boolean { this.remember(); return this.flush(); }
   chooseVariable(id: string): boolean {
     const v = this.vocabulary.find(v => v.id === id);
-    if (!v || this.mode !== 'controlled') return false;
+    if (!v) return false;
     this.remember(); this.buffer = ''; this.warning = ''; this.put({ type: 'variable', id }); return true;
   }
   input(text: string): void {
@@ -130,6 +138,10 @@ export class EditorController {
     visit(this.expression, []); return paths;
   }
   move(direction: -1 | 1): void {
+    if (this.buffer && this.selectedSuggestion) {
+      const suggestions = this.suggestions, index = suggestions.findIndex(v => v.id === this.selectedSuggestion!.id);
+      this.suggestionId = suggestions[(index + direction + suggestions.length) % suggestions.length].id; return;
+    }
     if (!this.flush()) return;
     this.advance(direction);
   }

@@ -19,6 +19,8 @@ const editor = createEditor(document.querySelector('#equation'), {
 });
 
 editor.getDocument(); // defensive copy; may be an incomplete draft
+editor.updateVocabulary(updatedEntries); // same IDs, current display metadata
+editor.insertVariable(variableId); // retained logical cursor, including nested slots
 editor.loadDocument(otherDocument); // validates first; same session vocabulary
 editor.submit(); // true on successful callback, false with visible feedback
 editor.cancel(); // cancellation callback only
@@ -34,6 +36,8 @@ Matching uses the supplied symbol, a compact symbol spelling without braces/back
 
 Unrecognized input remains pending with a warning. It never invents an ID. Ordinary operators, numbers, constants and functions remain available. Greek variables in controlled mode must come from the vocabulary; pi remains a built-in constant.
 
-Vocabulary and initial document are defensively copied. Reinitialize a new editor session with a revised vocabulary to reflect renames/removals. `loadDocument` does not update the current session's vocabulary. Missing IDs remain visibly unresolved, even if a new variable uses the same old symbol.
+Vocabulary and initial document are defensively copied. Call `editor.updateVocabulary(entries)` to refresh current symbols and allowed IDs without resetting the expression, logical cursor, pending input, or undo history. `loadDocument` does not update the current session's vocabulary. Missing IDs remain visibly unresolved, even if a new variable uses the same old symbol.
 
 A working two-instance host example is available locally at `/examples/embedded.html`; its host-side developer-tools API illustrates reopening with revised vocabulary and inspecting callbacks. The standalone demo uses this same reusable package.
+
+The editor owns its Variables dropdown. Its two top rows contain five structures, then Variables/Functions/Symbols. Its bottom touch controls are left, right, and Backspace. Hosts own Save/Cancel boundaries through the instance API; keyboard Ctrl/Cmd+Enter and undo/redo remain supported. Suggestions display mathematical symbols without units. The first pending match is selected automatically, left/right selects another, and Space commits the selected ID.

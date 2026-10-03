@@ -6,7 +6,7 @@ test.beforeEach(async ({page}) => { errors=[]; page.on('pageerror',e=>errors.pus
 test.afterEach(() => { expect(errors || []).toEqual([]); });
 test('closing parentheses exit nested powers and fractions inside functions',async({page})=>{
   await type(page,'cos(x^2)+sqrt(x/2)+3 ');
-  await page.getByRole('button',{name:'Submit equation',exact:true}).click();
+  await page.locator('#editor textarea').press('Control+Enter');
   expect((await document(page)).expression.map((n:any)=>n.type)).toEqual(['function','operator','root','operator','number']);
   await expect(page.locator('#result')).toContainText('Submitted');
 });
@@ -17,7 +17,7 @@ async function type(page: Page, text: string, host = '#editor') {
 async function document(page: Page) { return JSON.parse(await page.locator('#json').innerText()); }
 test('ordinary keyboard functions, incorrect equations and implicit multiplication',async({page})=>{
   await type(page,'cos(x)+2 x = 900 ');
-  await page.getByRole('button',{name:'Submit equation',exact:true}).click();
+  await page.locator('#editor textarea').press('Control+Enter');
   const d=await document(page); expect(d.status).toBe('complete'); expect(d.expression[0]).toEqual({type:'function',name:'cos',argument:[{type:'identifier',name:'x'}]});
   expect(d.expression.slice(-2)).toEqual([{type:'operator',value:'='},{type:'number',value:'900'}]);
   await expect(page.locator('#result')).toContainText('Submitted');
@@ -25,25 +25,25 @@ test('ordinary keyboard functions, incorrect equations and implicit multiplicati
 test('controlled weight equation and known numerical zero preserve IDs',async({page})=>{
   await page.locator('#mode').selectOption('controlled');
   await type(page,'W_{E,R} = m_R * g_E ');
-  await page.getByRole('button',{name:'Submit equation',exact:true}).click();
+  await page.locator('#editor textarea').press('Control+Enter');
   expect((await document(page)).expression.filter((n:any)=>n.type==='variable').map((n:any)=>n.id)).toEqual(['earth-rock.weight','rock.mass','earth.gravity']);
   await page.locator('#new').click(); await type(page,'a_R = 0 ');
-  await page.getByRole('button',{name:'Submit equation',exact:true}).click();
+  await page.locator('#editor textarea').press('Control+Enter');
   expect((await document(page)).expression.at(-1)).toEqual({type:'number',value:'0'});
   await expect(page.locator('.me-field .me-accent')).toHaveCount(0);
 });
 test('autocomplete and unknown identifier warning',async({page,isMobile})=>{
   await page.locator('#mode').selectOption('controlled'); await type(page,'wei');
-  const suggestion=page.locator('.me-suggestions button').filter({hasText:'Earth force on rock'});
+  const suggestion=page.locator('.me-suggestions [data-variable-id="earth-rock.weight"]');
   if(isMobile) await suggestion.tap(); else await suggestion.click();
-  await type(page,' = nonsense '); await page.getByRole('button',{name:'Submit equation',exact:true}).click();
+  await type(page,' = nonsense '); await page.locator('#editor textarea').press('Control+Enter');
   await expect(page.locator('.me-status')).toContainText('Unrecognized identifier');
   const d=await document(page); expect(d.status).toBe('draft'); expect(d.pending.text).toBe('nonsense');
   expect(d.expression[0]).toEqual({type:'variable',id:'earth-rock.weight'});
   await expect(page.locator('#result')).not.toContainText('Submitted');
 });
 test('nested structures, mouse/touch cursor placement and replacement',async({page,isMobile})=>{
-  const control=async(name:string)=>{const b=page.getByRole('button',{name,exact:true}); if(isMobile)await b.tap();else await b.click();};
+  const control=async(name:string)=>{const key=({'Next slot':'Tab','Exit structure':'Escape','Delete next token':'Delete','Submit equation':'Control+Enter'} as Record<string,string>)[name];if(key){await page.locator('#editor textarea').press(key);return;}const b=page.getByRole('button',{name,exact:true}); if(isMobile)await b.tap();else await b.click();};
   await control('Fraction'); await type(page,'x+1 '); await control('Next slot');
   await page.getByRole('combobox',{name:'Functions'}).selectOption('cos'); await type(page,'theta '); await control('Exit structure'); await control('Exit structure');
   await control('Power'); await type(page,'2 '); await control('Exit structure');
@@ -64,13 +64,13 @@ test('keyboard navigation enters and exits nested slots',async({page})=>{
   await page.keyboard.press('Escape'); await expect(page.locator('.me-current')).toHaveAttribute('data-path','[1]');
 });
 test('roots, Greek, subscript and summation controls; legacy derivatives and accents reopen',async({page})=>{
-  await type(page,'x_1 '); await page.getByRole('button',{name:'Exit structure',exact:true}).click();
-  await type(page,'+'); await page.getByRole('button',{name:'Square root',exact:true}).click(); await type(page,'4 '); await page.getByRole('button',{name:'Exit structure',exact:true}).click();
-  await type(page,'+'); await page.getByRole('button',{name:'Summation',exact:true}).click(); await type(page,'i=1 '); await page.getByRole('button',{name:'Next slot',exact:true}).click(); await type(page,'3 '); await page.getByRole('button',{name:'Next slot',exact:true}).click(); await type(page,'x '); await page.getByRole('button',{name:'Exit structure',exact:true}).click();
-  await page.getByRole('button',{name:'Submit equation',exact:true}).click(); expect((await document(page)).status).toBe('complete');
-  await expect(page.locator('.me-root')).toHaveCount(1); await expect(page.locator('.me-sum')).toHaveCount(1);
+  await type(page,'x_1 '); await page.locator('#editor textarea').press('Escape');
+  await type(page,'+'); await page.getByRole('button',{name:'Square root',exact:true}).click(); await type(page,'4 '); await page.locator('#editor textarea').press('Escape');
+  await page.locator('#editor textarea').press('Control+Enter'); expect((await document(page)).status).toBe('complete');
+  await expect(page.locator('.me-root')).toHaveCount(1);await expect(page.getByRole('button',{name:'Summation',exact:true})).toHaveCount(0);
   for(const name of ['Derivative','Vector accent','Hat accent'])await expect(page.getByRole('button',{name,exact:true})).toHaveCount(0);
   const legacy={format:'mathed',version:1,status:'complete',expression:[
+    {type:'sum',lower:[{type:'number',value:'1'}],upper:[{type:'number',value:'3'}],body:[{type:'identifier',name:'x'}]},
     {type:'derivative',expression:[{type:'identifier',name:'x'}],variable:[{type:'identifier',name:'x'}],order:[{type:'number',value:'1'}]},
     {type:'accent',kind:'vec',body:[{type:'identifier',name:'v'}]},
     {type:'accent',kind:'hat',body:[{type:'identifier',name:'x'}]}
@@ -79,7 +79,7 @@ test('roots, Greek, subscript and summation controls; legacy derivatives and acc
   await expect(page.locator('#result')).toContainText('Opened');
   expect((await document(page)).expression).toEqual(legacy.expression);
   await expect(page.locator('.me-derivative')).toHaveCount(1);await expect(page.locator('.me-accent')).toHaveCount(2);
-  await page.getByRole('button',{name:'Submit equation',exact:true}).click();expect((await document(page)).status).toBe('complete');
+  await page.locator('#editor textarea').press('Control+Enter');expect((await document(page)).status).toBe('complete');
 });
 test('JSON download/open preserves nested structure and unfinished input',async({page})=>{
   await type(page,'(x+1)/2e-');
@@ -89,17 +89,17 @@ test('JSON download/open preserves nested structure and unfinished input',async(
   await page.locator('#open').setInputFiles({name:'saved.mathed.json',mimeType:'application/json',buffer:bytes});
   await expect(page.locator('#result')).toContainText('Opened');
   expect(await document(page)).toEqual(expected);
-  await type(page,'3 '); await page.getByRole('button',{name:'Submit equation',exact:true}).click(); expect((await document(page)).status).toBe('complete');
+  await type(page,'3 '); await page.locator('#editor textarea').press('Control+Enter'); expect((await document(page)).status).toBe('complete');
 });
 test('undo/redo restores structured edits and input',async({page})=>{
   await type(page,'x '); const before=await document(page);
   await page.getByRole('button',{name:'Power',exact:true}).click(); await type(page,'2 '); const after=await document(page);
-  for(let i=0;i<3;i++)await page.getByRole('button',{name:'Undo',exact:true}).click(); expect(await document(page)).toEqual(before);
-  for(let i=0;i<3;i++)await page.getByRole('button',{name:'Redo',exact:true}).click(); expect(await document(page)).toEqual(after);
+  for(let i=0;i<3;i++)await page.locator('#editor textarea').press('Control+z'); expect(await document(page)).toEqual(before);
+  for(let i=0;i<3;i++)await page.locator('#editor textarea').press('Control+Shift+z'); expect(await document(page)).toEqual(after);
 });
 test('incomplete structures prevent submission and malformed imports leave editing intact',async({page})=>{
   await page.getByRole('button',{name:'Fraction',exact:true}).click(); await type(page,'1 ');
-  await page.getByRole('button',{name:'Submit equation',exact:true}).click(); await expect(page.locator('.me-status')).toContainText('denominator');
+  await page.locator('#editor textarea').press('Control+Enter'); await expect(page.locator('.me-status')).toContainText('denominator');
   const d=await document(page);
   await page.locator('#open').setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from('{"version":99}')});
   await expect(page.locator('#result')).toContainText('Unable to open'); expect(await document(page)).toEqual(d);
@@ -115,12 +115,12 @@ test('resizing keeps expression, rendering and page width stable',async({page})=
 test('host renames and missing references resolve by ID; cancellation never mutates source',async({page})=>{
   await page.goto('/examples/embedded.html');
   await page.evaluate(v=> (window as any).example.initialize(v),sampleVocabulary);
-  await type(page,'mass=0 ','#first'); await page.locator('#first').getByRole('button',{name:'Submit equation',exact:true}).click();
+  await type(page,'mass=0 ','#first'); await page.locator('#first textarea').press('Control+Enter');
   const saved=await page.evaluate(()=> (window as any).example.submissions[0]);
   const updated=sampleVocabulary.map(v=>({...v,symbol:v.id==='rock.mass'?'m_{stone}':v.symbol}));
   await page.evaluate(({v,d})=>(window as any).example.initialize(v,d),{v:updated,d:saved});
   await expect(page.locator('#first .me-field')).toContainText('stone');
-  await type(page,'+7 ','#first'); await page.locator('#first').getByRole('button',{name:'Cancel editing',exact:true}).click();
+  await type(page,'+7 ','#first'); await page.evaluate(()=>(window as any).example.first.cancel());
   expect(await page.evaluate(()=>(window as any).example.submissions.length)).toBe(0);
   expect(await page.evaluate(()=>(window as any).example.cancellations)).toBe(1);
   expect(saved.expression.at(-1)).toEqual({type:'number',value:'0'});
@@ -132,16 +132,15 @@ test('host renames and missing references resolve by ID; cancellation never muta
 test('ambiguous symbols require explicit suggestion selection',async({page})=>{
   await page.goto('/examples/embedded.html');
   await page.evaluate(()=>(window as any).example.initialize([{id:'first-q',symbol:'q',description:'First charge'},{id:'second-q',symbol:'q',description:'Second charge'}]));
-  await type(page,'q ','#first'); await expect(page.locator('#first .me-status')).toContainText('Multiple variables');
-  await page.locator('#first .me-suggestions button').filter({hasText:'Second charge'}).click();
-  await page.locator('#first').getByRole('button',{name:'Submit equation',exact:true}).click();
+  await type(page,'q','#first');await expect(page.locator('#first .me-suggestions [data-variable-id="first-q"]')).toHaveAttribute('aria-selected','true');await page.locator('#first textarea').press('ArrowRight');await page.locator('#first textarea').press('Space');
+  await page.locator('#first textarea').press('Control+Enter');
   expect(await page.evaluate(()=>(window as any).example.submissions[0].expression)).toEqual([{type:'variable',id:'second-q'}]);
 });
 test('repeated initialization, teardown and parallel sessions do not leak state or listeners',async({page})=>{
   await page.goto('/examples/embedded.html');
   for(let i=0;i<12;i++){
     await page.evaluate(()=>(window as any).example.initialize()); await type(page,'x=0 ','#first');
-    await page.locator('#first').getByRole('button',{name:'Submit equation',exact:true}).click();
+    await page.locator('#first textarea').press('Control+Enter');
     expect(await page.evaluate(()=>(window as any).example.submissions.length)).toBe(1);
     expect(await page.evaluate(()=>(window as any).example.second.getDocument().expression)).toEqual([]);
     await type(page,'cos(y)','#second');

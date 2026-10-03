@@ -31,14 +31,11 @@ test('overlapping m variables stay buffered until chosen or explicitly committed
   await expect(page.locator('.me-suggestions button')).toHaveCount(3);
   await type(page,'_{R,2} ');expect((await doc(page)).expression).toEqual([{type:'variable',id:'demo.mass-2'}]);
   await page.locator('#new').click();await type(page,'m ');
-  await expect(page.locator('.me-status')).toContainText('Multiple');
-  const exact=page.locator('.me-suggestions [data-variable-id="demo.mass"]');
-  if(isMobile)await exact.tap();else await exact.click();
-  expect((await doc(page)).expression).toEqual([{type:'variable',id:'demo.mass'}]);
+  expect((await doc(page)).expression).toEqual([{type:'variable',id:'rock.mass'}]);
 });
 test('demo vocabulary add, rename, remove, apply, reset and JSON reopening',async({page})=>{
   await page.goto('/');await page.locator('#mode').selectOption('controlled');await type(page,'m_R = 0 ');
-  await page.getByRole('button',{name:'Submit equation',exact:true}).click();const saved=await doc(page);
+  await page.locator('#editor textarea').press('Control+Enter');const saved=await doc(page);
   await page.getByText('Demonstration vocabulary',{exact:true}).click();
   await page.getByRole('textbox',{name:'Display symbol 1',exact:true}).fill('m_{stone}');
   expect((await page.locator('.me-field').innerText())).not.toContain('stone');
@@ -87,7 +84,7 @@ test('compact mathematical spacing stays stable during cursor navigation and sti
   expect(layout.scripts.every(s=>s.size<23&&s.gap<4)).toBe(true);
   await page.locator('#editor textarea').focus();await page.keyboard.press('Home');
   for(let i=0;i<14;i++){await page.keyboard.press('ArrowRight');expect(Math.abs((await nestedMetrics()).width-layout.width)).toBeLessThan(1);}
-  await page.getByRole('button',{name:'Submit equation',exact:true}).click();expect((await doc(page)).status).toBe('complete');
+  await page.locator('#editor textarea').press('Control+Enter');expect((await doc(page)).status).toBe('complete');
   await page.locator('#open').setInputFiles({name:'partial.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({format:'mathed',version:1,status:'draft',expression:cases[2]}))});
   await expect(page.locator('#result')).toContainText('Opened');
   const partialWidth=()=>page.locator('.me-field > .me-sequence').evaluate(el=>el.getBoundingClientRect().width);

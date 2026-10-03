@@ -85,9 +85,9 @@ describe('controlled vocabulary and host identities', () => {
     expect(absent.issues()).toContain('Unresolved variable: rock.mass'); expect(absent.submit()).toBeNull();
     expect(absent.getDocument().expression).toEqual(d.expression); expect(absent.getDocument().status).toBe('draft');
   });
-  it('requires selection for ambiguous matches', () => {
+  it('selects the first ambiguous match and supports choosing another', () => {
     const c = new EditorController({mode:'controlled',vocabulary:[{id:'one',symbol:'q',aliases:['charge']},{id:'two',symbol:'q',aliases:['charge']}]});
-    c.input('charge '); expect(c.expression).toEqual([]); expect(c.suggestions).toHaveLength(2); expect(c.warning).toMatch(/Multiple/);
+    c.input('charge'); expect(c.expression).toEqual([]); expect(c.suggestions).toHaveLength(2);expect(c.selectedSuggestion?.id).toBe('one');
     c.chooseVariable('two'); expect(c.submit()?.expression).toEqual([{type:'variable',id:'two'}]);
   });
   it('warns for unknown identifiers without authorizing or losing the draft buffer', () => {

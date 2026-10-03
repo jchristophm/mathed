@@ -9,9 +9,9 @@ it('never commits a shorter prefix while m_R or m_{R,2} is still being typed',()
   c.input('_{R,');expect(c.expression).toEqual([]);c.input('2} ');expect(c.expression).toEqual([{type:'variable',id:'demo.mass-2'}]);
   c.input('+m_R ');expect(c.expression.at(-1)).toEqual({type:'variable',id:'rock.mass'});
 });
-it('offers explicit selection when m alias and display symbol are ambiguous',()=>{
+it('automatically selects the first overlapping variable and commits with Space',()=>{
   const c=new EditorController({mode:'controlled',vocabulary:sampleVocabulary});c.input('m ');
-  expect(c.expression).toEqual([]);expect(c.warning).toMatch(/Multiple/);c.chooseVariable('demo.mass');
+  expect(c.expression).toEqual([{type:'variable',id:'rock.mass'}]);c.undo();c.chooseVariable('demo.mass');
   expect(c.submit()?.expression).toEqual([{type:'variable',id:'demo.mass'}]);
 });
 it('renames and removes overlapping vocabulary variables without substituting IDs',()=>{

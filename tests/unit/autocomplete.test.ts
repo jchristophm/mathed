@@ -1,0 +1,7 @@
+import {it,expect} from 'vitest';
+import {EditorController} from '../../src/controller';
+import {toLatex} from '../../src/latex';
+const vocabulary=[{id:'local-g',symbol:'g',units:'m/s^2'},{id:'constant-G',symbol:'G',units:'N*m^2/kg^2'},{id:'mass',symbol:'m_B'}];
+it('Space commits a single prefix match as an ID',()=>{const c=new EditorController({mode:'controlled',vocabulary});c.input('m');expect(c.selectedSuggestion?.id).toBe('mass');c.input(' ');expect(c.expression).toEqual([{type:'variable',id:'mass'}]);});
+it('arrows select pending suggestions then return to expression navigation',()=>{const c=new EditorController({mode:'controlled',vocabulary});c.input('g');expect(c.selectedSuggestion?.id).toBe('local-g');c.move(1);expect(c.selectedSuggestion?.id).toBe('constant-G');c.move(-1);expect(c.selectedSuggestion?.id).toBe('local-g');c.move(-1);expect(c.selectedSuggestion?.id).toBe('constant-G');c.input(' ');expect(c.expression).toEqual([{type:'variable',id:'constant-G'}]);c.move(-1);expect(c.path).toEqual([0]);});
+it('live display changes resolve existing IDs while preserving cursor and pending text',()=>{const c=new EditorController({mode:'controlled',vocabulary:[{id:'mu',symbol:'\\mu_s',aliases:['mu']} ]});c.input('mu ');const path=[...c.path];c.input('2');c.vocabulary.splice(0,1,{id:'mu',symbol:'\\mu_k',aliases:['mu']});expect(toLatex(c.expression,c.vocabulary)).toContain('\\mu_k');expect(c.path).toEqual(path);expect(c.buffer).toBe('2');});
