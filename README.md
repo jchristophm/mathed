@@ -10,6 +10,12 @@ Mathed lets you write mathematical expressions using a keyboard or on-screen con
 
 ## What makes Mathed different?
 
+For example, an instructor teaching Newton's second law can provide students with a **controlled vocabulary** of physical quantities: the net force on an object, its mass, and its acceleration, each with a defined symbol and meaning. Students construct equations using only these instructor-provided variables rather than inventing their own notation.
+
+This creates a powerful opportunity for **instructional scaffolding**. By constraining the available vocabulary, instructors can reduce the cognitive burden of identifying and naming quantities, allowing students to focus on the mathematical relationships between them. As students develop proficiency, those constraints can be relaxed, gradually shifting responsibility for mathematical modeling back to the learner.
+
+Controlled vocabularies also enable richer **formative and summative assessments**. Instructors can introduce plausible distractor quantities alongside relevant variables, challenging students to select appropriate physical quantities and construct valid mathematical relationships. Because Mathed preserves both variable identities and equation structure, assessment software can evaluate not just the final answer, but the mathematical relationships students construct. This makes it possible to develop machine-gradable analytical problems that assess aspects of mathematical reasoning rather than relying exclusively on numerical answers or multiple-choice responses.
+
 - **Equations stay editable.** Fractions, exponents, subscripts, roots, functions, and other mathematical structures are stored as structured nodes, not flattened into an image or a LaTeX string.
 - **Your variables can have identities.** In *controlled vocabulary* mode, an application supplies its own variables and persistent IDs. A displayed symbol can change without changing which variable the equation refers to.
 - **Editing works inside expressions.** Move between nested slots with the keyboard, click or tap an insertion point, and use undo/redo while you work.
