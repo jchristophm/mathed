@@ -1,54 +1,98 @@
 # Mathed
 
-An independent browser equation editor with editable structured JSON and optional externally supplied variables. No accounts, database, solver or external service is required.
+![Mathed demo showing an equation editor and its structured document](docs/images/mathed-demo.png)
 
-Public demonstration: [Mathed](https://jchristophm.github.io/mathed/).
-The [embedding example](https://jchristophm.github.io/mathed/examples/embedded.html) demonstrates two independent editor sessions.
+**A lightweight equation editor for the web — with editable mathematics, not just a picture of an equation.**
 
-## Local development
+Mathed lets you write mathematical expressions using a keyboard or on-screen controls, then save them as structured JSON. Use it on its own or embed it in another application. No account, database, or backend service is required.
 
-Use Node 22 or newer:
+**[Try the live demo](https://jchristophm.github.io/mathed/)** · **[See the embedding example](https://jchristophm.github.io/mathed/examples/embedded.html)**
+
+## What makes Mathed different?
+
+- **Equations stay editable.** Fractions, exponents, subscripts, roots, functions, and other mathematical structures are stored as structured nodes, not flattened into an image or a LaTeX string.
+- **Your variables can have identities.** In *controlled vocabulary* mode, an application supplies its own variables and persistent IDs. A displayed symbol can change without changing which variable the equation refers to.
+- **Editing works inside expressions.** Move between nested slots with the keyboard, click or tap an insertion point, and use undo/redo while you work.
+- **It fits into other applications.** Mathed is a reusable browser component with an API for loading drafts, updating variables, and receiving completed equations. The host controls saving and submission.
+
+Mathed is an **editor**, not a symbolic algebra system: it preserves what the author entered rather than solving, simplifying, or checking the equation.
+
+## Designed for AI-assisted learning
+
+Mathed is designed with AI-assisted educational software in mind. Traditional equation editors primarily capture how mathematics *looks*. Mathed also preserves what mathematical expressions *mean* through structured JSON and variables with persistent semantic identities.
+
+This allows AI agents to distinguish quantities that share similar symbols, recognize relationships between physical concepts, and interpret a student's mathematical reasoning in context. Rather than reconstructing meaning from a rendered equation or LaTeX string, an AI agent can work directly with an explicit representation of the student's intended mathematical structure.
+
+**Mathed does not interpret or evaluate mathematics itself.** Instead, it provides a semantic foundation that educational applications and AI agents can use to deliver more context-aware feedback, identify misconceptions, and support student reasoning.
+
+## How does Mathed compare to Desmos?
+
+[Desmos](https://www.desmos.com/calculator) uses a sophisticated MathQuill-derived editor ([DesQuill](https://github.com/desmosinc/desquill)) that makes entering mathematical expressions intuitive. Its public calculator API exchanges expressions as LaTeX, with an emphasis on mathematical evaluation and graphing.
+
+**Mathed takes a different approach.** Instead of using LaTeX as its document format, it stores equations as structured JSON, with individual mathematical elements represented explicitly. More importantly, variables can carry **persistent identities independent of their displayed symbols**. This allows an application to distinguish physical quantities, rename variables, and preserve their meaning across editing sessions.
+
+Mathed is not intended to replace Desmos as a calculator or graphing tool. It is designed as a lightweight, embeddable equation editor for applications where the **structure and identity of mathematical expressions matter as much as their appearance**.
+
+## Try it
+
+The [interactive demo](https://jchristophm.github.io/mathed/) includes two modes:
+
+| Mode | What you can do |
+| --- | --- |
+| **Standalone** | Type free-form mathematics, such as `cos(x) + 2`, and insert structures using the toolbar. |
+| **Controlled vocabulary** | Build equations from a supplied list of variables. Try entering `weight = mass * gravity` to see how variable names map to persistent IDs. |
+
+Use **Space** or **Enter** to commit typed input. Arrow keys move through the expression, **Tab** moves between nested slots, and **Esc** exits a structure. The demo also lets you inspect the underlying JSON, download an equation, and reopen it later. In controlled mode, expand **Demonstration vocabulary** to try renaming or removing a variable without changing the saved equation's references.
+
+## Run locally
+
+Requires Node.js 22 or newer.
 
 ```sh
+git clone https://github.com/jchristophm/mathed.git
+cd mathed
 npm ci
 npm run dev
 ```
 
-Open the displayed local URL. The demo provides standalone and controlled-vocabulary modes, mathematical controls, structured JSON inspection, download and reopening. The sample vocabulary represents Earth, a rock and a string; it is demonstration data, not physics-specific editor behavior. Expand **Demonstration vocabulary** to add or remove entries, edit persistent IDs, display symbols and aliases, apply the library to a new session with the current equation, or reset the original library. These edits last for the current page session. The fixtures include `m`, `m_R` and `m_{R,2}`. Typing a prefix keeps input buffered and shows matching suggestions; the first match is selected automatically, arrows choose another, and Space commits the selected persistent ID.
+Open the local address printed by Vite.
 
-To test renaming, save an equation with Download JSON, edit its variable's display symbol while retaining the ID, apply the vocabulary, then reopen the JSON. The new session renders the updated symbol while preserving the saved variable ID and structure. Removing an entry leaves existing references unresolved rather than replacing or dropping them.
+## Embed Mathed
 
-## Verification and builds
+Build the reusable browser package:
 
 ```sh
-npm test
 npm run build
-npx playwright install --with-deps chromium
-npm run test:browser
-npm run preview
 ```
 
-Build outputs: reusable ES module and declarations in `dist/`; standalone demo and embedding example in `demo-dist/`. The workflow runs units, both production builds and Chromium desktop/Pixel 7 mobile-emulation tests once. Successful development pushes upload the verified `demo-dist/` artifact and deploy it through GitHub Pages. Pull requests only verify. Assets use relative URLs, including from the nested embedding-example path.
+For a locally installed copy of the package (for example, with `npm install ../mathed` in your application), a minimal TypeScript integration looks like this:
 
-One-time repository setup: Settings → Pages → Build and deployment → Source → GitHub Actions. If the `github-pages` environment restricts deployment branches, allow `development`. After changing settings, re-run the failed deployment job; no merge into main is needed.
+```ts
+import { createEditor } from '@jchristophm/mathed';
+import '@jchristophm/mathed/style.css';
 
-## Editing
+const editor = createEditor(document.querySelector('#equation')!, {
+  onSubmit: document => console.log(document)
+});
+```
 
-Type ordinary names such as `cos(x)`, `sqrt(4)`, decimals or `2.5e-3`. Space/Enter commits buffered input; adjacent tokens mean implicit multiplication. `/`, `^` and `_` wrap the preceding operand as a fraction, power or subscript; controls also create empty structures. In controlled mode, commit a variable before using an underscore as a structure control; otherwise underscores remain part of a complex variable name.
+To supply variables, load saved documents, or manage more than one editor, see the **[integration guide](docs/INTEGRATION.md)**. Mathed is not currently published to npm.
 
-Arrow keys traverse nested slots; Tab/Shift+Tab and up/down visit neighboring slots. Escape returns to the parent expression. Home/End move within the current slot. Clicking/tapping insertion positions or tokens places the cursor. Backspace and forward Delete follow the same ordered nested positions as arrow navigation. They edit buffered input one character at a time, enter filled structures, traverse sibling slots and remove empty containers. Repeated Backspace from the end or Delete from the beginning empties an expression without manual repositioning. Undo/Redo is per session; Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z are supported. `editor.submit()` or Ctrl/Cmd+Enter returns a complete document; `editor.cancel()` returns no expression. Hosts provide their own Save/Cancel boundary.
+## Documentation
 
-The standard toolbar offers fractions, powers, subscripts, parentheses, roots, summation, functions and symbols. Derivative and vector/hat accent buttons are hidden. Saved derivative and accent nodes remain readable and editable; version 1 documents and the public integration API are unchanged. Compact insertion positions preserve mathematical spacing, with invisible click/touch targets and visible empty-slot placeholders.
+- [Integration and variable vocabularies](docs/INTEGRATION.md)
+- [Structured document format](docs/FORMAT.md) and [JSON schema](docs/document.schema.json)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Example documents](examples/)
 
-## Interface and format
+For development checks, run `npm test`, `npm run build`, and `npm run test:browser` (after installing Playwright's Chromium browser).
 
-- [Integration API and vocabulary](docs/INTEGRATION.md)
-- [Version 1 document specification](docs/FORMAT.md) and [JSON schema](docs/document.schema.json)
-- [Architecture and reference inspection](docs/ARCHITECTURE.md)
-- [Representative JSON and embedding example](examples/)
+## Project status
 
-## Limits
+Mathed is at an early **0.1.0** stage. It handles individual equations; it does not yet include a notebook, equation solver, LaTeX import, handwriting recognition, or Diagramed integration. Browser tests cover desktop and mobile emulation, but testing on physical mobile devices and with assistive technologies is still needed.
 
-Single equations only; no Notebook, assessment, symbolic solver, LaTeX import, handwriting or Diagramed integration. Selection is token/cursor based rather than arbitrary mouse text-range selection; replace a token by deleting it and inserting the replacement. Derivative structures currently represent total derivatives. Available functions and Greek symbols are enumerated in the schema. Controlled input requires supplied variable IDs, including symbolic subscripts that form part of a variable. Missing references remain unresolved drafts until the host supplies their IDs again or the author explicitly edits them.
+## License
 
-Automated mobile checks use emulation; physical-device keyboards and assistive technologies need additional testing. The original Mathed and Balanced code in Problemly was inspected read-only; recursive token editing, buffered recognition and useful controls informed this implementation. No software license has been added.
+Mathed is open-source software released under the **MIT License**. You are free to use, modify, and distribute it, including in commercial applications, subject to the terms of the license.
+
+See [LICENSE](LICENSE) for details.
